@@ -5,4 +5,6 @@ import com.example.demo.entity.User;
 public interface UserService {
     void register(User user);
     boolean login(String username, String password);
+    User findByUsername(String username);
+    void updateuserProfile(String username, User updatedUser);
 }

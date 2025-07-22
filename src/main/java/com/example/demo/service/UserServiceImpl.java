@@ -28,4 +28,15 @@ public class UserServiceImpl implements UserService{
         return userOpt.isPresent() && userOpt.get().getPassword().equals(password);
     }
 
+    @Override
+    public User findByUsername(String username){
+        return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User nor found."));
+    }
+
+    @Override
+    public void updateuserProfile(String username, User updatedUser){
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found!"));
+        userRepository.save(user);
+    }
+
 }
