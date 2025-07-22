@@ -1,10 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.User;
+import jakarta.servlet.http.HttpSession;
 
 public interface UserService {
-    void register(User user);
+    void register(com.example.demo.entity.User user);
     boolean login(String username, String password);
-    User findByUsername(String username);
-    void updateuserProfile(String username, User updatedUser);
+    com.example.demo.entity.User findByUsername(String username);
+    void logout(HttpSession session);
 }

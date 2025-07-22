@@ -2,20 +2,18 @@ package com.example.demo.service;
 
 import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
-
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
 
     @Override
-    public void register(User user){
+    public void register(User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Username already exists.");
         }
@@ -23,20 +21,20 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public boolean login(String username, String password){
-        Optional<User> userOpt = userRepository.findByUsername(username);
-        return userOpt.isPresent() && userOpt.get().getPassword().equals(password);
+    public boolean login(String username, String password) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        return user != null && user.getPassword().equals(password);
     }
 
     @Override
-    public User findByUsername(String username){
-        return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User nor found."));
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
     }
+
 
     @Override
-    public void updateuserProfile(String username, User updatedUser){
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found!"));
-        userRepository.save(user);
+    public void logout(HttpSession session) {
+        session.invalidate();
     }
-
 }
+

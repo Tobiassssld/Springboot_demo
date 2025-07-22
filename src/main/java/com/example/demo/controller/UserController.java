@@ -33,10 +33,21 @@ public class UserController {
         }
     }
 
+
     @GetMapping("/profile")
-    public User getProfile(HttpSession session){
+    public ResponseEntity<?> getProfile(HttpSession session) {
         String username = (String) session.getAttribute("username");
-        return userService.findByUsername(username);
+        if (username == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
+        }
+        User user = userService.findByUsername(username);
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpSession session) {
+        userService.logout(session);
+        return ResponseEntity.ok("Logged out successfully.");
     }
 
 
