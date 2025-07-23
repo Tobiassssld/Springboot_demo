@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -35,6 +37,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public void logout(HttpSession session) {
         session.invalidate();
+    }
+
+    @Override
+    public boolean changePassword(String username, String oldPassword, String newPassword){
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (optionalUser.isPresent()){
+            User user = optionalUser.get();
+            if (user.getPassword().equals(oldPassword)){
+                user.setPassword(newPassword);
+                userRepository.save(user);
+                return true;
+            }
+        }
+        return false;
     }
 }
 

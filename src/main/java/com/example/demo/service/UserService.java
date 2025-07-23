@@ -7,4 +7,5 @@ public interface UserService {
     boolean login(String username, String password);
     com.example.demo.entity.User findByUsername(String username);
     void logout(HttpSession session);
+    boolean changePassword(String username, String oldPassword, String newPassword);
 }
