@@ -31,11 +31,12 @@ public class JwtUtil {
         return createToken(username);
     }
 
-    private String createToken(String subject){
+    private String createToken(String subject) {
+        long currentTime = System.currentTimeMillis();
         return Jwts.builder()
                 .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis()))
+                .setIssuedAt(new Date(currentTime))
+                .setExpiration(new Date(currentTime + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
