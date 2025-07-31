@@ -2,6 +2,10 @@ package com.example.demo.service;
 
 import com.example.demo.entity.Account;
 import com.example.demo.entity.User;
+import com.example.demo.enums.TransactionType;
+import com.example.demo.exception.AccountNotFoundException;
+import com.example.demo.exception.InsufficientFundsException;
+import com.example.demo.exception.InvalidTransactionException;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +24,9 @@ public class AccountServiceImpl implements AccountService{
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TransactionService transactionService;
 
     @Override
     public Account createAccount(Long userId, String accountType, String currency) {
@@ -68,22 +75,31 @@ public class AccountServiceImpl implements AccountService{
         Account account = getAccountByAccountNumber(accountNumber);
         account.setBalance(account.getBalance().add(amount));
         accountRepository.save(account);
+
+        transactionService.createTransaction(null, account.getId(), amount,
+                TransactionType.DEPOSIT, "Cash deposit");
+
         return true;
     }
 
     @Override
     public boolean withdraw(String accountNumber, BigDecimal amount){
         if (amount.compareTo(BigDecimal.ZERO) <= 0){
-            throw new RuntimeException("withdrawal amount must be positive");
+            throw new InvalidTransactionException("withdrawal amount must be positive");
         }
 
         Account account = getAccountByAccountNumber(accountNumber);
         if (account.getBalance().compareTo(amount) < 0){
-            throw new RuntimeException("insufficient funds");
+            throw new InsufficientFundsException(
+                    String.format("Insufficient funds. Available: %s, Requested: %s",
+                            account.getBalance(), amount));
         }
 
         account.setBalance(account.getBalance().subtract(amount));
         accountRepository.save(account);
+
+        transactionService.createTransaction(account.getId(), null, amount,
+                TransactionType.WITHDRAWAL, "Cash withdrawal");
         return true;
     }
 
@@ -91,12 +107,19 @@ public class AccountServiceImpl implements AccountService{
     @Override
     public boolean transfer(String fromAccount, String toAccount, BigDecimal amount){
         if (amount.compareTo(BigDecimal.ZERO) <= 0){
-            throw new RuntimeException("Transfer amount must be positive.");
+            throw new AccountNotFoundException("Transfer amount must be positive.");
         }
+
+        Account fromAcc = getAccountByAccountNumber(fromAccount);
+        Account toAcc = getAccountByAccountNumber(toAccount);
 
         //atomic operation
         withdraw(fromAccount, amount);
         deposit(toAccount, amount);
+
+        transactionService.createTransaction(fromAcc.getId(), toAcc.getId(), amount,
+                TransactionType.TRANSFER, "Transfer between accounts");
+
         return true;
     }
 
